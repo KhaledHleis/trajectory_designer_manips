@@ -271,3 +271,49 @@ class BaseTrajectory(ABC):
         d_east = np.cos(angles) * sign
         headings = np.array([direction_to_heading(dn, de) for dn, de in zip(d_north, d_east)])
         return pts, headings
+
+
+class SparseWaypointTrajectory(BaseTrajectory):
+    """
+    Base for mission-style trajectories: `generate_trajectory_local()` returns
+    only the corner waypoints (what goes into a MAVLink/ArduPilot mission).
+
+    Heading convention for sparse output: each waypoint carries the course of
+    the leg LEAVING it; the last waypoint carries the course of the leg
+    arriving at it.
+
+    `generate_dense()` flies the same polyline at `drone_speed`, sampled at
+    `sampling_freq`, for the batch generator / simulator / consistency check.
+    """
+
+    SPARSE = True
+
+    @staticmethod
+    def _leg_headings(pts: np.ndarray) -> np.ndarray:
+        n = len(pts)
+        if n == 0:
+            return np.empty((0,))
+        if n == 1:
+            return np.zeros(1)
+        d = np.diff(pts, axis=0)
+        h = np.array([direction_to_heading(dn, de) for dn, de in d])
+        return np.append(h, h[-1])
+
+    def generate_dense_local(self) -> tuple[np.ndarray, np.ndarray]:
+        wps, _ = self.generate_trajectory_local()
+        if len(wps) < 2:
+            return wps, self._leg_headings(wps)
+        pts, hdg = [], []
+        for i in range(len(wps) - 1):
+            seg, h = self._sample_segment(wps[i], wps[i + 1])
+            if i > 0:  # don't duplicate the shared corner
+                seg, h = seg[1:], h[1:]
+            pts.append(seg)
+            hdg.append(h)
+        return np.vstack(pts), np.concatenate(hdg)
+
+    def generate_dense(self) -> tuple[np.ndarray, np.ndarray]:
+        pts, hdg = self.generate_dense_local()
+        if len(pts) == 0:
+            return np.empty((0, 2)), np.empty((0,))
+        return self.frame.to_latlon(pts), hdg

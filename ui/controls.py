@@ -7,17 +7,8 @@ from typing import Callable
 from .theme import Theme as T
 
 _ALGO_SECTIONS = {
-    "Lawnmower":        {"lawnmower"},
-    "Zigzag":           {"lawnmower"},
-    "Parallel":         {"parallel"},
-    "Sinusoidal":       {"sinusoidal"},
-    "Spiral":           {"spiral"},
-    "Starburst":        {"starburst"},
-    "Random Walk":      {"random_walk"},
-    "Creeping Line":    {"lawnmower"},
-    "Expanding Square": {"expanding"},
-    "Random Crossings": {"random_cross"},
-    "Waypoints":        {"lawnmower"},
+    "Lawnmower": {"lawnmower"},
+    "Revisit":   {"revisit"},
 }
 
 
@@ -39,27 +30,10 @@ class ControlsPanel(tk.Frame):
             drone_speed=self.drone_speed.get(),
             n_crossings=int(self.n_crossings.get()),
             angle_deg=self.angle_deg.get(),
-            turn_sharpness=self.turn_sharpness.get(),
             pass_width=self.pass_width.get(),
             offset_m=self.offset_m.get(),
-            amplitude_m=self.amplitude_m.get(),
-            phase_offset=self.phase_offset.get(),
-            n_loops=self.n_loops.get(),
-            start_radius_m=self.start_radius_m.get(),
-            end_radius_m=self.end_radius_m.get(),
-            angle_offset=self.angle_offset.get(),
-            tilt_deg=self.tilt_deg.get(),
-            ray_length_m=self.ray_length_m.get(),
-            centre_offset_m=self.centre_offset_m.get(),
-            angle_spread=self.angle_spread.get(),
-            angle_start=self.angle_start.get(),
-            step_m=self.step_m.get(),
-            lateral_bound_m=self.lateral_bound_m.get(),
-            attraction=self.attraction.get(),
-            growth_m=self.growth_m.get(),
-            angle_min_deg=self.angle_min_deg.get(),
-            angle_max_deg=self.angle_max_deg.get(),
-            lateral_jitter=self.lateral_jitter.get(),
+            overshoot_m=self.overshoot_m.get(),
+            start_side=self.start_side.get(),
         )
 
     def set_info(self, text: str):
@@ -93,52 +67,17 @@ class ControlsPanel(tk.Frame):
         self.sampling_freq = self._slider("Sampling freq (Hz)", 50.0, 1.0, 200.0, 1.0)
         self.drone_speed   = self._slider("Drone speed (m/s)",  1.5, 0.1, 10.0, 0.1)
 
-        # lawnmower / zigzag / creeping / waypoints
-        lf = self._param_section("lawnmower", "LAWNMOWER / ZIGZAG / …")
-        self.n_crossings    = self._slider("Crossings",          5,   1,  20,   1,   lf)
-        self.angle_deg      = self._slider("Incidence angle (°)", 90, 5, 175,   1,   lf)
-        self.turn_sharpness = self._slider("Turn sharpness",     1.0, 0.1, 5.0, 0.1, lf)
-        self.pass_width     = self._slider("Pass width (×cable)", 0.55, 0.05, 3.0, 0.05, lf)
+        # lawnmower (rectangular)
+        lf = self._param_section("lawnmower", "LAWNMOWER")
+        self.n_crossings = self._slider("Crossings",           5,   1,  20,   1,    lf)
+        self.angle_deg   = self._slider("Incidence angle (°)", 90,  5,  175,  1,    lf)
+        self.pass_width  = self._slider("Pass width (×cable)", 0.55, 0.05, 3.0, 0.05, lf)
 
-        # parallel
-        pf = self._param_section("parallel", "PARALLEL")
-        self.offset_m = self._slider("Spacing (m)", 2.0, 0.1, 20.0, 0.1, pf)
-
-        # sinusoidal
-        sf = self._param_section("sinusoidal", "SINUSOIDAL")
-        self.amplitude_m  = self._slider("Amplitude (m)",  3.0, 0.1, 15.0, 0.1, sf)
-        self.phase_offset = self._slider("Phase offset",   0.0, 0.0,  1.0, 0.01, sf)
-
-        # spiral
-        spf = self._param_section("spiral", "SPIRAL")
-        self.n_loops       = self._slider("Loops",           3.0, 0.5,  10.0, 0.5, spf)
-        self.start_radius_m= self._slider("Start radius (m)", 8.0, 0.5, 30.0, 0.5, spf)
-        self.end_radius_m  = self._slider("End radius (m)",   1.0, 0.1, 10.0, 0.1, spf)
-        self.angle_offset  = self._slider("Angle offset (°)", 0.0, 0.0, 360.0, 1.0, spf)
-        self.tilt_deg      = self._slider("Tilt (°)",         30.0, 0.0, 80.0, 1.0, spf)
-
-        # starburst
-        stf = self._param_section("starburst", "STARBURST")
-        self.ray_length_m   = self._slider("Ray length (m)",  6.0, 0.5, 20.0, 0.5, stf)
-        self.centre_offset_m= self._slider("Centre offset(m)",0.0,-5.0,  5.0, 0.1, stf)
-        self.angle_spread   = self._slider("Angle spread (°)",180, 20, 360, 5, stf)
-        self.angle_start    = self._slider("Start angle (°)", 0.0, 0.0, 360.0, 1.0, stf)
-
-        # random walk
-        rwf = self._param_section("random_walk", "RANDOM WALK")
-        self.step_m         = self._slider("Step (m)",        0.5, 0.1, 3.0, 0.05, rwf)
-        self.lateral_bound_m= self._slider("Lateral bound(m)",4.0, 0.5, 15.0, 0.5, rwf)
-        self.attraction     = self._slider("Attraction",      0.3, 0.0,  1.0, 0.05, rwf)
-
-        # expanding square
-        esf = self._param_section("expanding", "EXPANDING SQUARE")
-        self.growth_m = self._slider("Growth/side (m)", 2.0, 0.1, 10.0, 0.1, esf)
-
-        # random crossings
-        rcf = self._param_section("random_cross", "RANDOM CROSSINGS")
-        self.angle_min_deg  = self._slider("Angle min (°)",  20, 5, 90, 1, rcf)
-        self.angle_max_deg  = self._slider("Angle max (°)", 160, 90, 175, 1, rcf)
-        self.lateral_jitter = self._slider("Along jitter",  0.8, 0.0, 1.0, 0.05, rcf)
+        # revisit (C around the cable)
+        rf = self._param_section("revisit", "REVISIT")
+        self.offset_m    = self._slider("Dist. from cable (m)", 5.0, 0.5, 50.0, 0.5, rf)
+        self.overshoot_m = self._slider("Overshoot ends (m)",   5.0, 0.0, 50.0, 0.5, rf)
+        self.start_side  = self._slider("Start side (+1 L/-1 R)", 1, -1, 1, 2, rf)
 
         self._section_label("INFO")
         self.info_text = tk.StringVar(value="—")

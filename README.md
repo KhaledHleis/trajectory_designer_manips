@@ -11,19 +11,10 @@ trajectory_maker_v3/
 ├── config/
 │   └── default_config.json   ← All parameters + randomisation ranges
 │
-├── trajectories/        ← 10 trajectory types
-│   ├── base.py
-│   ├── lawnmower.py     Hermite-spline turns, exact crossing angles
-│   ├── zigzag.py        V-turns, compact, exact crossing angles
-│   ├── parallel.py      Parallel passes along cable axis
-│   ├── sinusoidal.py    Sine wave crossing repeatedly
-│   ├── spiral.py        Inward/outward spiral
-│   ├── starburst.py     Radial passes from centre
-│   ├── random_walk.py   Cable-attracted random walk
-│   ├── creeping_line.py Naval creeping line search
-│   ├── expanding_square.py  Williamson expanding square
-│   ├── random_crossings.py  Random angles + positions (best for ML variety)
-│   └── waypoint.py      Sparse drone-command waypoints
+├── trajectories/        ← 2 mission patterns (sparse waypoints)
+│   ├── base.py          local metric frame + SparseWaypointTrajectory (densify)
+│   ├── lawnmower.py     Rectangular lawnmower, exact crossing angle, 90° corners
+│   └── revisit.py       C-pattern around the cable at a set distance
 │
 ├── generator/
 │   ├── batch_generate.py   Core generation loop

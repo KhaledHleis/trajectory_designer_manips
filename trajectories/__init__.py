@@ -1,28 +1,11 @@
-from .base import BaseTrajectory
+from .base import BaseTrajectory, SparseWaypointTrajectory
 from .lawnmower import LawnmowerTrajectory
-from .zigzag import ZigzagTrajectory
-from .parallel import ParallelTrajectory
-from .waypoint import WaypointTrajectory
-from .sinusoidal import SinusoidalTrajectory
-from .spiral import SpiralTrajectory
-from .starburst import StarburstTrajectory
-from .random_walk import RandomWalkTrajectory
-from .creeping_line import CreepingLineTrajectory
-from .expanding_square import ExpandingSquareTrajectory
-from .random_crossings import RandomCrossingsTrajectory
+from .revisit import RevisitTrajectory
 
 TRAJECTORY_REGISTRY: dict[str, type[BaseTrajectory]] = {
-    "Lawnmower":        LawnmowerTrajectory,
-    "Zigzag":           ZigzagTrajectory,
-    "Parallel":         ParallelTrajectory,
-    "Sinusoidal":       SinusoidalTrajectory,
-    "Spiral":           SpiralTrajectory,
-    "Starburst":        StarburstTrajectory,
-    "Random Walk":      RandomWalkTrajectory,
-    "Creeping Line":    CreepingLineTrajectory,
-    "Expanding Square": ExpandingSquareTrajectory,
-    "Random Crossings": RandomCrossingsTrajectory,
-    "Waypoints":        WaypointTrajectory,
+    "Lawnmower": LawnmowerTrajectory,
+    "Revisit":   RevisitTrajectory,
 }
 
-__all__ = list(TRAJECTORY_REGISTRY.keys()) + ["BaseTrajectory", "TRAJECTORY_REGISTRY"]
+__all__ = ["BaseTrajectory", "SparseWaypointTrajectory", "LawnmowerTrajectory",
+           "RevisitTrajectory", "TRAJECTORY_REGISTRY"]

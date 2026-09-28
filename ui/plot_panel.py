@@ -52,6 +52,9 @@ class PlotPanel(tk.Frame):
         self.ax.clear()
         self._style_axes()
 
+        lat_mid = 0.5 * (params["cable_p1"][0] + params["cable_p2"][0])
+        lon_stretch = 1.0 / math.cos(math.radians(lat_mid))
+
         if len(waypoints) > 1:
             pts = waypoints[:, [1, 0]]  # (lon, lat) → (x, y)
 
@@ -72,17 +75,16 @@ class PlotPanel(tk.Frame):
                     )
                 # Heading arrows at each waypoint
                 if headings is not None and len(headings) == len(pts):
+                    # Arrow length in degrees of latitude; longitude offset is
+                    # stretched by 1/cos(lat) so the arrow points along the
+                    # true ground course on the equal-metre plot.
+                    arrow_len = max(float(np.ptp(pts[:, 1])) * 0.04, 2e-6)
                     for (x, y), h in zip(pts, headings):
-                        # Convert nav heading (CW from N) to math angle (CCW from E)
-                        rad = math.radians(90.0 - h)
-                        arrow_len = max(
-                            (self.ax.get_xlim()[1] - self.ax.get_xlim()[0]) * 0.03,
-                            1e-7,
-                        )
+                        hr = math.radians(h)
                         self.ax.annotate(
                             "",
-                            xy=(x + math.cos(rad) * arrow_len,
-                                y + math.sin(rad) * arrow_len),
+                            xy=(x + math.sin(hr) * arrow_len * lon_stretch,
+                                y + math.cos(hr) * arrow_len),
                             xytext=(x, y),
                             arrowprops=dict(
                                 arrowstyle="->",
@@ -174,6 +176,10 @@ class PlotPanel(tk.Frame):
             self.ax.set_xlim(self.ax.get_xlim()[0] - dx2, self.ax.get_xlim()[1] + dx2)
             self.ax.set_ylim(self.ax.get_ylim()[0] - dy2, self.ax.get_ylim()[1] + dy2)
             self._axis_initialised = True
+
+        # Equal metres on both axes: 1 deg lon is cos(lat) × 1 deg lat, so
+        # without this a right angle on the ground is drawn skewed.
+        self.ax.set_aspect(lon_stretch, adjustable="datalim")
 
         self.fig.tight_layout()
         self.canvas.draw_idle()

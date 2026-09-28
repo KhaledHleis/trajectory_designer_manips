@@ -6,7 +6,6 @@ from .controls import ControlsPanel
 from .plot_panel import PlotPanel
 from .theme import Theme as T
 
-_WAYPOINT_ALGOS = {"Waypoints"}
 
 class WaypointGeneratorApp:
     def __init__(self, root: tk.Tk):
@@ -38,14 +37,16 @@ class WaypointGeneratorApp:
             klass = TRAJECTORY_REGISTRY.get(algo, LawnmowerTrajectory)
             traj  = klass(**p)
             self.waypoints, self.headings = traj.generate_trajectory()
-            is_wp = algo in _WAYPOINT_ALGOS
+            self.traj = traj
             self.plot.draw(self.waypoints, self.headings, p,
-                           title=f"{algo} Trajectory", waypoint_mode=is_wp)
+                           title=f"{algo} Waypoints", waypoint_mode=True)
             n   = len(self.waypoints)
-            dur = n / p["sampling_freq"] if not is_wp else 0
+            wl  = traj.generate_trajectory_local()[0]
+            dist = float(np.sum(np.linalg.norm(np.diff(wl, axis=0), axis=1))) if n > 1 else 0.0
+            dur = dist / p["drone_speed"]
             self.controls.set_info(
                 f"Waypoints : {n}\n"
-                f"{'Duration  : '+str(round(dur,1))+' s' if not is_wp else 'Mode: Sparse WP'}\n"
+                f"Path      : {dist:.1f} m  (~{dur:.0f} s)\n"
                 f"Speed     : {p['drone_speed']:.1f} m/s\n"
                 f"Sample Hz : {p['sampling_freq']}\n"
                 f"Heading   : nav (0=N, CW)"
@@ -75,7 +76,10 @@ class WaypointGeneratorApp:
             for i,(lat,lon) in enumerate(self.waypoints):
                 w.writerow([i+1,f"{lat:.10f}",f"{lon:.10f}",f"{self.headings[i]:.4f}"])
         from generator.verify import heading_consistency
-        hc = heading_consistency(self.waypoints, self.headings)
+        # Check on the flown (densified) path: sparse corners can't be
+        # finite-differenced meaningfully.
+        dense_pts, dense_hdg = self.traj.generate_dense()
+        hc = heading_consistency(dense_pts, dense_hdg)
         note = (
             f"\n\nheading vs ground course: {hc['median_deg']:+.4f} deg (median)"
             if hc["consistent"]

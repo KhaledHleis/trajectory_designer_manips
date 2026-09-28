@@ -1,105 +1,86 @@
 {
   "_comment": "Trajectory dataset generation config. All 'range' fields are [min, max] for uniform random sampling.",
-
   "dataset": {
     "name": "cable_survey_dataset",
     "n_trajectories": 50,
     "output_dir": "output",
     "seed": 42,
     "trajectory_types": [
-      "Lawnmower", "Zigzag", "Parallel", "Sinusoidal",
-      "Spiral", "Starburst", "Random Walk", "Creeping Line",
-      "Expanding Square", "Random Crossings"
+      "Lawnmower",
+      "Revisit"
     ],
     "trajectory_weights": null,
-    "formats": ["csv", "json"],
+    "formats": [
+      "csv",
+      "json"
+    ],
     "write_manifest": true,
     "write_label_events": true
   },
-
   "cable": {
-    "p1": [48.49227909392259, -4.50434496199812],
-    "p2": [48.492313209033945, -4.503827049110521],
+    "p1": [
+      48.49227909392259,
+      -4.50434496199812
+    ],
+    "p2": [
+      48.492313209033945,
+      -4.503827049110521
+    ],
     "randomize_position": false,
     "position_jitter_m": 0.0
   },
-
   "global": {
-    "sampling_freq": { "fixed": 50.0 },
-    "drone_speed":   { "range": [1.0, 3.0] }
+    "sampling_freq": {
+      "fixed": 50.0
+    },
+    "drone_speed": {
+      "range": [
+        1.0,
+        3.0
+      ]
+    }
   },
-
   "per_type": {
     "Lawnmower": {
-      "n_crossings":    { "range": [3, 12], "dtype": "int" },
-      "angle_deg":      { "range": [20, 160] },
-      "turn_sharpness": { "range": [0.5, 2.5] },
-      "pass_width":     { "range": [0.4, 1.2] }
+      "n_crossings": {
+        "range": [
+          3,
+          12
+        ],
+        "dtype": "int"
+      },
+      "angle_deg": {
+        "range": [
+          20,
+          160
+        ]
+      },
+      "pass_width": {
+        "range": [
+          0.4,
+          1.2
+        ]
+      }
     },
-    "Zigzag": {
-      "n_crossings":    { "range": [3, 12], "dtype": "int" },
-      "angle_deg":      { "range": [20, 160] },
-      "pass_width":     { "range": [0.4, 1.2] }
-    },
-    "Parallel": {
-      "n_crossings":    { "range": [3, 8], "dtype": "int" },
-      "offset_m":       { "range": [1.0, 5.0] },
-      "pass_width":     { "range": [0.3, 0.8] }
-    },
-    "Sinusoidal": {
-      "n_crossings":    { "range": [4, 16], "dtype": "int" },
-      "angle_deg":      { "range": [20, 80] },
-      "amplitude_m":    { "range": [1.0, 6.0] },
-      "pass_width":     { "range": [0.05, 0.3] },
-      "phase_offset":   { "range": [0.0, 1.0] }
-    },
-    "Spiral": {
-      "n_loops":         { "range": [1.5, 5.0] },
-      "start_radius_m":  { "range": [5.0, 15.0] },
-      "end_radius_m":    { "range": [0.5, 3.0] },
-      "angle_offset":    { "range": [0.0, 360.0] },
-      "tilt_deg":        { "range": [10.0, 60.0] }
-    },
-    "Starburst": {
-      "n_crossings":    { "range": [4, 16], "dtype": "int" },
-      "ray_length_m":   { "range": [3.0, 10.0] },
-      "centre_offset_m":{ "range": [-2.0, 2.0] },
-      "angle_spread":   { "range": [90.0, 360.0] },
-      "angle_start":    { "range": [0.0, 360.0] }
-    },
-    "Random Walk": {
-      "n_crossings":     { "range": [5, 20], "dtype": "int" },
-      "step_m":          { "range": [0.3, 1.5] },
-      "lateral_bound_m": { "range": [2.0, 8.0] },
-      "attraction":      { "range": [0.1, 0.6] },
-      "seed":            { "random_int": [0, 999999] }
-    },
-    "Creeping Line": {
-      "n_crossings":    { "range": [4, 10], "dtype": "int" },
-      "leg_spacing_m":  { "range": [1.0, 4.0] },
-      "angle_deg":      { "range": [30, 150] },
-      "pass_width":     { "range": [0.4, 1.0] },
-      "start_side":     { "choice": [1, -1] }
-    },
-    "Expanding Square": {
-      "n_crossings":    { "range": [2, 6], "dtype": "int" },
-      "step_m":         { "range": [1.0, 4.0] },
-      "growth_m":       { "range": [0.5, 3.0] },
-      "centre_offset_m":{ "range": [-2.0, 2.0] },
-      "angle_deg":      { "range": [0.0, 90.0] }
-    },
-    "Random Crossings": {
-      "n_crossings":    { "range": [5, 15], "dtype": "int" },
-      "angle_min_deg":  { "fixed": 15.0 },
-      "angle_max_deg":  { "fixed": 165.0 },
-      "pass_width":     { "range": [0.4, 1.0] },
-      "lateral_jitter": { "range": [0.3, 0.9] },
-      "seed":           { "random_int": [0, 999999] }
-    },
-    "Waypoints": {
-      "n_crossings":    { "range": [3, 8], "dtype": "int" },
-      "angle_deg":      { "range": [30, 150] },
-      "pass_width":     { "range": [0.4, 0.8] }
+    "Revisit": {
+      "offset_m": {
+        "range": [
+          2.0,
+          15.0
+        ]
+      },
+      "overshoot_m": {
+        "range": [
+          2.0,
+          10.0
+        ]
+      },
+      "start_side": {
+        "choice": [
+          1,
+          -1
+        ]
+      }
     }
   }
 }

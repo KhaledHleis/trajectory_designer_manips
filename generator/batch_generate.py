@@ -159,7 +159,12 @@ def generate(config_path: str, n_override=None, out_override=None, seed_override
 
         try:
             traj   = klass(**params)
-            pts, headings = traj.generate_trajectory()
+            # Sparse mission patterns are flown along their legs at
+            # drone_speed / sampling_freq to get a sample-level dataset.
+            if getattr(traj, "SPARSE", False):
+                pts, headings = traj.generate_dense()
+            else:
+                pts, headings = traj.generate_trajectory()
         except Exception as e:
             print(f"  [WARN] traj {i:04d} ({traj_type}) failed: {e}")
             continue
