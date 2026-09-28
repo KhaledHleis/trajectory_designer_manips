@@ -12,6 +12,13 @@ back along the other side.
       D ─────────────────────── C
 
 Waypoints: A (start) → B → C → D (end). Headings = course of each leg.
+
+`start_side` picks which cable end the C wraps around (i.e. flips the
+shape left/right, "]" <-> "["):
+    +1 : wrap around P2  ->  "]"   (drawn above)
+    -1 : wrap around P1  ->  "["
+The start is always on the left of P1→P2; use the global "swap start/end"
+(`reverse`) to fly the same shape the other way.
 """
 
 import numpy as np
@@ -24,7 +31,7 @@ class RevisitTrajectory(SparseWaypointTrajectory):
     ----------
     offset_m    : lateral distance from the cable to each parallel leg [m]
     overshoot_m : how far the legs extend beyond each cable end [m]
-    start_side  : +1 = start on the left of P1→P2, -1 = start on the right
+    start_side  : +1 = wrap around the P2 end ("]"), -1 = around P1 ("[")
     """
 
     def __init__(
@@ -50,17 +57,17 @@ class RevisitTrajectory(SparseWaypointTrajectory):
         if cable_len < 1e-9:
             return np.empty((0, 2))
         u_along = d / cable_len
-        # (north, east) frame: left of the P1→P2 direction
-        u_perp = np.array([u_along[1], -u_along[0]]) * self.start_side
+        u_left = np.array([u_along[1], -u_along[0]])  # left of P1→P2 in (N, E)
 
         e, o = self.overshoot_m, self.offset_m
         back = self.cable_p1 - e * u_along
         front = self.cable_p2 + e * u_along
+        open_end, wrap_end = (back, front) if self.start_side > 0 else (front, back)
 
         pts = np.array([
-            back + o * u_perp,    # A  start
-            front + o * u_perp,   # B
-            front - o * u_perp,   # C
-            back - o * u_perp,    # D  end
+            open_end + o * u_left,   # A  start
+            wrap_end + o * u_left,   # B
+            wrap_end - o * u_left,   # C
+            open_end - o * u_left,   # D  end
         ])
         return pts

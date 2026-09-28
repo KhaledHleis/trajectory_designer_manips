@@ -92,7 +92,7 @@ class ControlsPanel(tk.Frame):
         rf = self._param_section("revisit", "REVISIT")
         self.offset_m    = self._slider("Dist. from cable (m)", 5.0, 0.5, 50.0, 0.5, rf)
         self.overshoot_m = self._slider("Overshoot ends (m)",   5.0, 0.0, 50.0, 0.5, rf)
-        self.start_side  = self._slider("Start side (+1 L/-1 R)", 1, -1, 1, 2, rf)
+        self.start_side  = self._slider("Wrap end (+1 ] / -1 [)", 1, -1, 1, 2, rf)
 
         self._section_label("INFO")
         self.info_text = tk.StringVar(value="—")
