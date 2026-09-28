@@ -179,7 +179,7 @@ class PlotPanel(tk.Frame):
 
         # Equal metres on both axes: 1 deg lon is cos(lat) × 1 deg lat, so
         # without this a right angle on the ground is drawn skewed.
-        self.ax.set_aspect(lon_stretch, adjustable="datalim")
+        self.ax.set_aspect(lon_stretch, adjustable="box")
 
         self.fig.tight_layout()
         self.canvas.draw_idle()

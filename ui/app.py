@@ -44,6 +44,12 @@ class WaypointGeneratorApp:
             wl  = traj.generate_trajectory_local()[0]
             dist = float(np.sum(np.linalg.norm(np.diff(wl, axis=0), axis=1))) if n > 1 else 0.0
             dur = dist / p["drone_speed"]
+            if hasattr(traj, "pass_spacing_m"):
+                self.controls.set_spacing(
+                    f"Pass spacing  : {traj.pass_spacing_m:.2f} m\n"
+                    f"Along cable   : {traj.crossing_spacing_m:.2f} m\n"
+                    f"Cable length  : {traj.cable_length_m:.2f} m"
+                )
             self.controls.set_info(
                 f"Waypoints : {n}\n"
                 f"Path      : {dist:.1f} m  (~{dur:.0f} s)\n"

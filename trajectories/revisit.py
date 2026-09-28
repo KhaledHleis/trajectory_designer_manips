@@ -38,16 +38,17 @@ class RevisitTrajectory(SparseWaypointTrajectory):
         start_side: float = 1.0,
         **kwargs,
     ):
-        super().__init__(cable_p1, cable_p2, sampling_freq, drone_speed)
+        super().__init__(cable_p1, cable_p2, sampling_freq, drone_speed,
+                         reverse=kwargs.get("reverse", False))
         self.offset_m = max(0.01, float(offset_m))
         self.overshoot_m = max(0.0, float(overshoot_m))
         self.start_side = 1.0 if float(start_side) >= 0 else -1.0
 
-    def generate_trajectory_local(self) -> tuple[np.ndarray, np.ndarray]:
+    def _waypoints_local(self) -> np.ndarray:
         d = self.cable_p2 - self.cable_p1
         cable_len = float(np.linalg.norm(d))
         if cable_len < 1e-9:
-            return np.empty((0, 2)), np.empty((0,))
+            return np.empty((0, 2))
         u_along = d / cable_len
         # (north, east) frame: left of the P1→P2 direction
         u_perp = np.array([u_along[1], -u_along[0]]) * self.start_side
@@ -62,4 +63,4 @@ class RevisitTrajectory(SparseWaypointTrajectory):
             front - o * u_perp,   # C
             back - o * u_perp,    # D  end
         ])
-        return pts, self._leg_headings(pts)
+        return pts

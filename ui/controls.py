@@ -34,10 +34,14 @@ class ControlsPanel(tk.Frame):
             offset_m=self.offset_m.get(),
             overshoot_m=self.overshoot_m.get(),
             start_side=self.start_side.get(),
+            reverse=self.reverse_var.get(),
         )
 
     def set_info(self, text: str):
         self.info_text.set(text)
+
+    def set_spacing(self, text: str):
+        self.spacing_text.set(text)
 
     def get_algo(self) -> str:
         return self.algo_var.get()
@@ -66,12 +70,23 @@ class ControlsPanel(tk.Frame):
         self._section_label("GLOBAL PARAMETERS")
         self.sampling_freq = self._slider("Sampling freq (Hz)", 50.0, 1.0, 200.0, 1.0)
         self.drone_speed   = self._slider("Drone speed (m/s)",  1.5, 0.1, 10.0, 0.1)
+        self.reverse_var = tk.BooleanVar(value=False)
+        tk.Checkbutton(self, text="Swap start ⇄ end", variable=self.reverse_var,
+                       command=self._on_change, bg=T.PANEL_BG, fg=T.TEXT,
+                       selectcolor=T.ENTRY_BG, activebackground=T.PANEL_BG,
+                       activeforeground=T.ACCENT, font=T.FONT_MONO_MD,
+                       relief=tk.FLAT, highlightthickness=0, anchor="w"
+                       ).pack(fill=tk.X, padx=12, pady=(4, 0))
 
         # lawnmower (rectangular)
         lf = self._param_section("lawnmower", "LAWNMOWER")
         self.n_crossings = self._slider("Crossings",           5,   1,  20,   1,    lf)
         self.angle_deg   = self._slider("Incidence angle (°)", 90,  5,  175,  1,    lf)
         self.pass_width  = self._slider("Pass width (×cable)", 0.55, 0.05, 3.0, 0.05, lf)
+        self.spacing_text = tk.StringVar(value="—")
+        tk.Label(lf, textvariable=self.spacing_text, bg=T.PANEL_BG, fg=T.ACCENT2,
+                 font=T.FONT_MONO_MD, justify=tk.LEFT
+                 ).pack(anchor="w", padx=12, pady=(4, 2))
 
         # revisit (C around the cable)
         rf = self._param_section("revisit", "REVISIT")

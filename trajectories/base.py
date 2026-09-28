@@ -288,6 +288,21 @@ class SparseWaypointTrajectory(BaseTrajectory):
 
     SPARSE = True
 
+    def __init__(self, cable_p1, cable_p2, sampling_freq, drone_speed,
+                 reverse: bool = False):
+        super().__init__(cable_p1, cable_p2, sampling_freq, drone_speed)
+        self.reverse = bool(reverse)
+
+    def _waypoints_local(self) -> np.ndarray:
+        """Subclasses: return (N, 2) corner waypoints in the metre frame."""
+        raise NotImplementedError
+
+    def generate_trajectory_local(self) -> tuple[np.ndarray, np.ndarray]:
+        pts = np.asarray(self._waypoints_local(), dtype=float).reshape(-1, 2)
+        if self.reverse:  # swap start and end: fly the same path backwards
+            pts = pts[::-1].copy()
+        return pts, self._leg_headings(pts)
+
     @staticmethod
     def _leg_headings(pts: np.ndarray) -> np.ndarray:
         n = len(pts)

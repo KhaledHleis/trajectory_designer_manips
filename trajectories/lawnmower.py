@@ -46,16 +46,34 @@ class LawnmowerTrajectory(SparseWaypointTrajectory):
         pass_width: float = 0.55,
         **kwargs,
     ):
-        super().__init__(cable_p1, cable_p2, sampling_freq, drone_speed)
+        super().__init__(cable_p1, cable_p2, sampling_freq, drone_speed,
+                         reverse=kwargs.get("reverse", False))
         self.n_crossings = max(1, int(round(n_crossings)))
         self.angle_deg = max(5.0, min(175.0, float(angle_deg)))
         self.pass_width = max(0.01, float(pass_width))
 
-    def generate_trajectory_local(self) -> tuple[np.ndarray, np.ndarray]:
+    # ── spacing (metres) ──────────────────────────────────────────────────
+    @property
+    def cable_length_m(self) -> float:
+        return float(np.linalg.norm(self.cable_p2 - self.cable_p1))
+
+    @property
+    def crossing_spacing_m(self) -> float:
+        """Distance between consecutive crossings, measured ALONG the cable."""
+        n = self.n_crossings
+        return 0.0 if n < 2 else self.cable_length_m / (n - 1)
+
+    @property
+    def pass_spacing_m(self) -> float:
+        """Perpendicular distance between adjacent parallel passes
+        (= length of the short transit legs)."""
+        return self.crossing_spacing_m * abs(math.sin(math.radians(self.angle_deg)))
+
+    def _waypoints_local(self) -> np.ndarray:
         d = self.cable_p2 - self.cable_p1
         cable_len = float(np.linalg.norm(d))
         if cable_len < 1e-9:
-            return np.empty((0, 2)), np.empty((0,))
+            return np.empty((0, 2))
         u_along = d / cable_len
         u_perp = np.array([-u_along[1], u_along[0]])
         centre = (self.cable_p1 + self.cable_p2) / 2.0
@@ -80,4 +98,4 @@ class LawnmowerTrajectory(SparseWaypointTrajectory):
             wps.extend([start, anchor, end])
 
         pts = np.array(wps)
-        return pts, self._leg_headings(pts)
+        return pts
